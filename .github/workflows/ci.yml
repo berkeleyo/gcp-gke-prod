@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY_JSON }}
+      - name: Configure Docker auth
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+      - name: Build & Push
+        run: |
+          export PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+          export REGION=${{ secrets.GCP_REGION }}
+          export AR_REPO=apps
+          export IMAGE=sample
+          export TAG=${{ github.sha }}
+          bash scripts/20_build_and_push.sh
+      - name: Deploy (kubectl apply)
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          REGION: ${{ secrets.GCP_REGION }}
+          AR_REPO: apps
+          TAG: ${{ github.sha }}
+          NAMESPACE: prod
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --zone ${{ secrets.GKE_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+          bash scripts/30_deploy_k8s.sh

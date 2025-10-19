@@ -1,0 +1,8 @@
+{
+  "action": {
+    "type": "Delete"
+  },
+  "condition": {
+    "numNewerVersions": 10
+  }
+}

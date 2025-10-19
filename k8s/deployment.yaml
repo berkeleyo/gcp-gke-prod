@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+  namespace: <ns>
+  labels:
+    app: sample
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample
+  template:
+    metadata:
+      labels:
+        app: sample
+    spec:
+      serviceAccountName: sample-sa
+      containers:
+        - name: web
+          image: <REGION>-docker.pkg.dev/<PROJECT_ID>/<AR_REPO>/sample:<TAG>
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: RUNTIME_ENV
+              value: "prod"
+            - name: SECRET_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: sample-secrets
+                  key: secret_value
+      nodeSelector: {}
+      tolerations: []
+      affinity: {}

@@ -1,0 +1,6 @@
+{
+  "role": "roles/artifactregistry.reader",
+  "members": [
+    "serviceAccount:<workload-identity-sa>@<project-id>.iam.gserviceaccount.com"
+  ]
+}

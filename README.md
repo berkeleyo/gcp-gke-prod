@@ -73,7 +73,7 @@ A production-ready reference implementation for running containerised workloads 
 
 ---
 
-## 🗺️ Mermaid — High‑Level Flow
+## 🗺️  Flow
 
 ```mermaid
 flowchart LR
